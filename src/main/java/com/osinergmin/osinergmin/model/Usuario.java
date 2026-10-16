@@ -1,30 +1,42 @@
 package com.osinergmin.osinergmin.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.type.NumericBooleanConverter;
+
+@Entity
+@Table(name = "LAB_USUARIO")
+@Getter
+@Setter
+@NoArgsConstructor
 public class Usuario {
-    private String nombre;
-    private Integer edad;
 
-    public Usuario() {
-    }
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ID")
+    private Long id;
 
-    public Usuario(String nombre, Integer edad) {
-        this.nombre = nombre;
-        this.edad = edad;
-    }
+    @Column(name = "USERNAME", nullable = false, length = 80, unique = true)
+    private String username;
 
-    public String getNombre() {
-        return nombre;
-    }
+    @Column(name = "PASSWORD_HASH", nullable = false, length = 120)
+    private String passwordHash;
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
+    @Enumerated(EnumType.STRING)
+    @Column(name = "ROL", nullable = false, length = 20)
+    private Rol rol;
 
-    public Integer getEdad() {
-        return edad;
-    }
-
-    public void setEdad(Integer edad) {
-        this.edad = edad;
-    }
+    @Convert(converter = NumericBooleanConverter.class)
+    @Column(name = "ACTIVO", nullable = false)
+    private Boolean activo = true;
 }
