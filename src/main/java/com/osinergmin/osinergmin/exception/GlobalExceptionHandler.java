@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.Map;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -63,6 +64,24 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UsuarioYaExisteException.class)
     public ResponseEntity<ErrorResponse> handleDuplicate(UsuarioYaExisteException ex) {
         return build(HttpStatus.CONFLICT, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(AplicacionYaExisteException.class)
+    public ResponseEntity<ErrorResponse> handleAplicacionDuplicada(AplicacionYaExisteException ex) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(AplicacionNoEncontradaException.class)
+    public ResponseEntity<ErrorResponse> handleAplicacionNoEncontrada(AplicacionNoEncontradaException ex) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), null);
+    }
+
+    /** Restricción de la BD (UNIQUE, FK): p. ej. eliminar una aplicación que ya tiene requerimientos. */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrity(DataIntegrityViolationException ex) {
+        log.warn("Restricción de integridad violada: {}", ex.getMostSpecificCause().getMessage());
+        return build(HttpStatus.CONFLICT,
+                "La operación no se puede completar porque el registro está en uso o duplicado", null);
     }
 
     private ResponseEntity<ErrorResponse> build(HttpStatus status, String message, Map<String, String> campos) {
