@@ -17,6 +17,8 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -74,6 +76,37 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AplicacionNoEncontradaException.class)
     public ResponseEntity<ErrorResponse> handleAplicacionNoEncontrada(AplicacionNoEncontradaException ex) {
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(RequerimientoNoEncontradoException.class)
+    public ResponseEntity<ErrorResponse> handleRequerimientoNoEncontrado(RequerimientoNoEncontradoException ex) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(RequerimientoNoEditableException.class)
+    public ResponseEntity<ErrorResponse> handleRequerimientoNoEditable(RequerimientoNoEditableException ex) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(ArchivoNoEncontradoException.class)
+    public ResponseEntity<ErrorResponse> handleArchivoNoEncontrado(ArchivoNoEncontradoException ex) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(ArchivoInvalidoException.class)
+    public ResponseEntity<ErrorResponse> handleArchivoInvalido(ArchivoInvalidoException ex) {
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErrorResponse> handleArchivoGrande(MaxUploadSizeExceededException ex) {
+        return build(HttpStatus.PAYLOAD_TOO_LARGE, "El archivo supera el tamaño máximo permitido", null);
+    }
+
+    /** Parámetro con valor inválido, p. ej. ?estado=XYZ. */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        return build(HttpStatus.BAD_REQUEST, "Valor inválido para el parámetro '" + ex.getName() + "'", null);
     }
 
     /** Restricción de la BD (UNIQUE, FK): p. ej. eliminar una aplicación que ya tiene requerimientos. */
