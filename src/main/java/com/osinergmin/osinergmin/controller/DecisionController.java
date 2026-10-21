@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Aprobación o rechazo (RF06). Solo el APROBADOR decide; cualquier otro rol recibe 403 (CA02). */
+/** Aprobación o rechazo (RF06). Exige REQUERIMIENTO_APROBAR; sin él responde 403 (CA02). */
 @RestController
 @RequestMapping("/api/requerimientos")
 public class DecisionController {
@@ -26,7 +26,7 @@ public class DecisionController {
     }
 
     @PatchMapping("/{id}/decision")
-    @PreAuthorize("hasRole('APROBADOR')")
+    @PreAuthorize("hasAuthority('REQUERIMIENTO_APROBAR')")
     public DecisionResponse decidir(
             @PathVariable long id,
             @Valid @RequestBody DecisionRequest request,

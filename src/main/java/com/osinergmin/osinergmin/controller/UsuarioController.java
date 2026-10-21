@@ -14,10 +14,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Gestión de usuarios: solo COORDINADOR (también protegido en SecurityConfig). */
+/** Gestión de usuarios: permiso USUARIO_ADMINISTRAR (también protegido en SecurityConfig). */
 @RestController
 @RequestMapping("/api/usuarios")
-@PreAuthorize("hasRole('COORDINADOR')")
+@PreAuthorize("hasAuthority('USUARIO_ADMINISTRAR')")
 public class UsuarioController {
 
     private final UsuarioService usuarioService;

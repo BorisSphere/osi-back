@@ -9,9 +9,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 /** Consulta de auditoría (RF07). Según la matriz de permisos, los tres roles pueden consultarla. */
 @RestController
+@PreAuthorize("hasAuthority('AUDITORIA_VER')")
 public class AuditoriaController {
 
     private final AuditoriaService auditoriaService;

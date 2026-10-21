@@ -26,7 +26,7 @@ public class EstimacionController {
     }
 
     @PutMapping("/{id}/estimacion")
-    @PreAuthorize("hasRole('ANALISTA')")
+    @PreAuthorize("hasAuthority('ESTIMACION_GUARDAR')")
     public EstimacionResponse estimar(
             @PathVariable long id,
             @Valid @RequestBody EstimacionRequest request,

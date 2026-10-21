@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-/** Requerimientos: todos los roles consultan; ANALISTA y COORDINADOR registran y eliminan; solo ANALISTA corrige. */
+/** Requerimientos: todos consultan; crear, modificar y eliminar exigen su permiso (ver Rol). */
 @RestController
 @RequestMapping("/api/requerimientos")
 public class RequerimientoController {
@@ -52,7 +52,7 @@ public class RequerimientoController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ANALISTA', 'COORDINADOR')")
+    @PreAuthorize("hasAuthority('REQUERIMIENTO_CREAR')")
     public ResponseEntity<RequerimientoResponse> crear(@Valid @RequestBody RequerimientoRequest request,
             @AuthenticationPrincipal Jwt jwt) {
         Number uid = jwt.getClaim(JwtService.CLAIM_USER_ID);
@@ -61,13 +61,13 @@ public class RequerimientoController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ANALISTA')")
+    @PreAuthorize("hasAuthority('REQUERIMIENTO_MODIFICAR')")
     public RequerimientoResponse actualizar(@PathVariable Long id, @Valid @RequestBody RequerimientoRequest request) {
         return requerimientoService.actualizar(id, request);
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ANALISTA', 'COORDINADOR')")
+    @PreAuthorize("hasAuthority('REQUERIMIENTO_ELIMINAR')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         requerimientoService.eliminar(id);
         return ResponseEntity.noContent().build();
@@ -75,7 +75,7 @@ public class RequerimientoController {
 
     /** multipart/form-data con el campo "archivo". Reemplaza el adjunto anterior si existía. */
     @PostMapping(path = "/{id}/archivo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('ANALISTA', 'COORDINADOR')")
+    @PreAuthorize("hasAuthority('REQUERIMIENTO_MODIFICAR')")
     public RequerimientoResponse adjuntarArchivo(@PathVariable Long id, @RequestParam("archivo") MultipartFile archivo) {
         return requerimientoService.adjuntarArchivo(id, archivo);
     }

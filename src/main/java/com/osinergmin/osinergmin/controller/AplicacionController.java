@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Catálogo de aplicaciones: todos los roles lo consultan, solo COORDINADOR lo modifica. */
+/** Catálogo de aplicaciones: todos lo consultan; modificarlo exige CATALOGO_GESTIONAR. */
 @RestController
 @RequestMapping("/api/aplicaciones")
 public class AplicacionController {
@@ -39,20 +39,20 @@ public class AplicacionController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('COORDINADOR')")
+    @PreAuthorize("hasAuthority('CATALOGO_GESTIONAR')")
     public ResponseEntity<AplicacionResponse> crear(@Valid @RequestBody AplicacionRequest request) {
         AplicacionResponse creada = aplicacionService.crear(request);
         return ResponseEntity.created(URI.create("/api/aplicaciones/" + creada.id())).body(creada);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('COORDINADOR')")
+    @PreAuthorize("hasAuthority('CATALOGO_GESTIONAR')")
     public AplicacionResponse actualizar(@PathVariable Long id, @Valid @RequestBody AplicacionRequest request) {
         return aplicacionService.actualizar(id, request);
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('COORDINADOR')")
+    @PreAuthorize("hasAuthority('CATALOGO_GESTIONAR')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         aplicacionService.eliminar(id);
         return ResponseEntity.noContent().build();

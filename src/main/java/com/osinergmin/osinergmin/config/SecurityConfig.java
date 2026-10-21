@@ -3,8 +3,8 @@ package com.osinergmin.osinergmin.config;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.osinergmin.osinergmin.security.JsonAuthenticationEntryPoint;
 import com.osinergmin.osinergmin.security.JwtProperties;
-import com.osinergmin.osinergmin.security.JwtService;
 import com.osinergmin.osinergmin.security.RefreshTokenProperties;
+import com.osinergmin.osinergmin.security.RolAuthoritiesConverter;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import javax.crypto.SecretKey;
@@ -31,7 +31,6 @@ import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -42,7 +41,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableConfigurationProperties({JwtProperties.class, RefreshTokenProperties.class})
 public class SecurityConfig {
 
-    /** Rutas y permisos por rol. Los permisos finos van con @PreAuthorize en cada controlador. */
+    /** Rutas públicas y protegidas. Los permisos finos van con @PreAuthorize(hasAuthority) en cada controlador. */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JsonAuthenticationEntryPoint jsonEntryPoint)
             throws Exception {
@@ -54,7 +53,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/refresh", "/api/auth/logout").permitAll()
                         .requestMatchers("/error").permitAll()
-                        .requestMatchers("/api/usuarios/**").hasRole("COORDINADOR")
+                        .requestMatchers("/api/usuarios/**").hasAuthority("USUARIO_ADMINISTRAR")
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
@@ -94,14 +93,10 @@ public class SecurityConfig {
         return decoder;
     }
 
-    /** Convierte el claim "rol" del token en la autoridad ROLE_<rol> para hasRole(...). */
+    /** Del claim "rol" del token obtiene ROLE_<rol> y los permisos del rol (ver Rol). */
     private JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtGrantedAuthoritiesConverter authorities = new JwtGrantedAuthoritiesConverter();
-        authorities.setAuthoritiesClaimName(JwtService.CLAIM_ROL);
-        authorities.setAuthorityPrefix("ROLE_");
-
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(authorities);
+        converter.setJwtGrantedAuthoritiesConverter(new RolAuthoritiesConverter());
         return converter;
     }
 

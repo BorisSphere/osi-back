@@ -22,7 +22,7 @@ public class UsuarioDetailsService implements UserDetailsService {
         return repository.findByUsernameIgnoreCase(username)
                 .map(usuario -> User.withUsername(usuario.getUsername())
                         .password(usuario.getPasswordHash())
-                        .roles(usuario.getRol().name())
+                        .roles(usuario.getRol().name()) // solo para el login; los permisos de cada petición vienen del JWT
                         .disabled(!usuario.getActivo())
                         .build())
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
