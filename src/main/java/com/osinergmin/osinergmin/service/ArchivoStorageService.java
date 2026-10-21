@@ -20,8 +20,13 @@ public class ArchivoStorageService {
 
     private final Path raiz;
 
-    public ArchivoStorageService(@Value("${app.storage.dir:uploads}") String directorio) {
+    public ArchivoStorageService(@Value("${app.storage.dir:C:/osi-uploads}") String directorio) {
         this.raiz = Path.of(directorio).toAbsolutePath().normalize();
+        try {
+            Files.createDirectories(raiz);
+        } catch (IOException e) {
+            throw new UncheckedIOException("No se pudo crear la carpeta de adjuntos: " + raiz, e);
+        }
     }
 
     /** Devuelve la ruta relativa guardada: {requerimientoId}/{uuid}_{nombre}. */
