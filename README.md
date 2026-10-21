@@ -74,6 +74,7 @@ Todo está en [`application.properties`](src/main/resources/application.properti
 | `REFRESH_COOKIE_SECURE` | `true` | Cookie solo por HTTPS. Poner `false` solo en desarrollo con Safari |
 | `CORS_ORIGINS` | `http://localhost:4200` | Orígenes permitidos (separados por coma) |
 | `STORAGE_DIR` | `uploads` | Carpeta de archivos adjuntos (en producción, una ruta persistente) |
+| `SWAGGER_ENABLED` | `true` | Swagger UI y `/v3/api-docs`. Poner `false` en producción |
 | `ADMIN_USERNAME` / `ADMIN_PASSWORD` | vacío | Coordinador inicial (ver arriba) |
 
 Las credenciales de Oracle están hoy en el archivo; en producción conviene moverlas a variables de entorno.
@@ -115,6 +116,16 @@ curl http://localhost:8091/api/auth/me -H "Authorization: Bearer <token>"
 ```
 
 En Postman: pestaña **Authorization** → tipo **Bearer Token**.
+
+### Swagger UI
+
+Con el backend levantado: **http://localhost:8091/swagger-ui.html** (especificación OpenAPI en `/v3/api-docs`).
+
+1. Ejecuta `POST /api/auth/login` desde Swagger (**Try it out**) y copia el `token` de la respuesta.
+2. Pulsa **Authorize**, pega el token (sin escribir `Bearer`) y confirma.
+3. Ya puedes probar cualquier endpoint. Cada uno indica en su descripción el **permiso requerido**, que se lee automáticamente de su `@PreAuthorize`.
+
+El token dura 15 minutos; al vencer, repite el paso 1. En producción, desactivar Swagger con `SWAGGER_ENABLED=false`.
 
 ## Roles y permisos
 
@@ -213,7 +224,7 @@ Todas las respuestas de error son JSON:
 
 ```
 src/main/java/com/osinergmin/osinergmin/
-├── config/       SecurityConfig (rutas, JWT, CORS), AdminInicialConfig
+├── config/       SecurityConfig (rutas, JWT, CORS), OpenApiConfig (Swagger), AdminInicialConfig
 ├── controller/   Endpoints REST
 ├── dto/          Records de entrada/salida (nunca se exponen entidades)
 ├── exception/    Excepciones de negocio y manejadores globales de errores

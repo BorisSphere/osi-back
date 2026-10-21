@@ -6,6 +6,8 @@ import com.osinergmin.osinergmin.dto.UsuarioResponse;
 import com.osinergmin.osinergmin.security.RefreshCookieService;
 import com.osinergmin.osinergmin.service.AuthService;
 import com.osinergmin.osinergmin.service.UsuarioService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -42,16 +44,22 @@ public class AuthController {
     }
 
     @PostMapping("/login")
+    @SecurityRequirements // público: no pide token
+    @Operation(summary = "Iniciar sesión", description = "Devuelve el access token (JWT) y crea la cookie del refresh token.")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         return conCookie(authService.login(request));
     }
 
     @PostMapping("/refresh")
+    @SecurityRequirements
+    @Operation(summary = "Renovar el access token", description = "Usa la cookie refresh_token (la envía el navegador) y la rota.")
     public ResponseEntity<LoginResponse> refresh(HttpServletRequest request) {
         return conCookie(authService.refrescar(leerCookie(request)));
     }
 
     @PostMapping("/logout")
+    @SecurityRequirements
+    @Operation(summary = "Cerrar sesión", description = "Revoca el refresh token y borra la cookie.")
     public ResponseEntity<Void> logout(HttpServletRequest request) {
         authService.logout(leerCookie(request));
         return ResponseEntity.noContent()
@@ -61,6 +69,7 @@ public class AuthController {
 
     /** Cualquier usuario autenticado: devuelve sus propios datos a partir del token. */
     @GetMapping("/me")
+    @Operation(summary = "Usuario actual", description = "Datos, rol y permisos del usuario del token.")
     public UsuarioResponse me(@AuthenticationPrincipal Jwt jwt) {
         return UsuarioResponse.from(usuarioService.buscarPorUsername(jwt.getSubject()));
     }
