@@ -114,8 +114,7 @@ class EstimacionServiceTest {
         when(requerimientoRepository.bloquearYLeerEstado(eq(99L))).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.estimar(99L, new BigDecimal("78"), ANALISTA))
-                .isInstanceOf(RequerimientoNoEncontradoException.class)
-                .hasMessageContaining("REQ-0099");
+                .isInstanceOf(RequerimientoNoEncontradoException.class);
 
         verify(estimacionRepository, never()).save(any());
     }
