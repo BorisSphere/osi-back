@@ -1,11 +1,8 @@
 package com.osinergmin.osinergmin.exception;
 
-import com.osinergmin.osinergmin.util.CodigoRequerimiento;
-
-/** El requerimiento no existe → 404. */
 public class RequerimientoNoEncontradoException extends RuntimeException {
 
-    public RequerimientoNoEncontradoException(long id) {
-        super("No existe el requerimiento " + CodigoRequerimiento.formatear(id));
+    public RequerimientoNoEncontradoException(Long id) {
+        super("No se encontró el requerimiento con id " + id);
     }
 }
