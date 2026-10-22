@@ -19,17 +19,18 @@ pipeline {
             }
         }
 
+        
         stage('Verificar WAR') {
             steps {
                 powershell '''
-                    $war = Join-Path $env:WORKSPACE "target\\osinergmin.war"
+                    $war = Join-Path $env:WORKSPACE "target\\osinergmin-0.0.1-SNAPSHOT.war"
 
                     if (-not (Test-Path $war)) {
-                        throw "No se encontro osinergmin.war"
+                        throw "No se encontro el archivo WAR."
                     }
 
-                    Write-Host "WAR generado correctamente"
-                    Get-Item $war | Select-Object Name, Length
+                    Write-Host "WAR generado correctamente:"
+                    Get-Item $war | Select-Object Name, Length, LastWriteTime
                 '''
             }
         }
