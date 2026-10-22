@@ -159,6 +159,12 @@ Los endpoints exigen **permisos**, no roles (`@PreAuthorize("hasAuthority('...')
 
 Todos bajo `/api`. Salvo los tres de autenticación marcados como públicos, todos requieren `Authorization: Bearer <token>`.
 
+### Estado del servicio
+
+| Método | Ruta | Acceso | Descripción |
+|---|---|---|---|
+| GET | `/api/health` | Público | `{"status":"UP","database":"UP",...}` → 200; si Oracle no responde → 503 con `DOWN` |
+
 ### Autenticación — `/api/auth`
 
 | Método | Ruta | Acceso | Descripción |
