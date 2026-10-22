@@ -24,12 +24,16 @@ pipeline {
                 powershell '''
                     $war = Join-Path $env:WORKSPACE 'target/osinergmin-0.0.1-SNAPSHOT.war'
 
-                    if (-not (Test-Path $war)) {
-                        throw "No se encontro el WAR generado"
-                    }
+                    $hayRespaldo = $false
 
-                    Write-Host "WAR generado correctamente"
-                    Get-Item $war | Select-Object Name, Length
+                    if (Test-Path $destino) {
+                        Write-Host "Respaldando version anterior"
+                        Copy-Item $destino $respaldo -Force
+                        $hayRespaldo = $true
+                    }
+                    else {
+                        Write-Host "No existe WAR anterior. Se realizara una instalacion nueva."
+                    }
                 '''
             }
         }
