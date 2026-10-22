@@ -7,6 +7,7 @@ pipeline {
     }
 
     stages {
+
         stage('Verificar Java') {
             steps {
                 bat 'java -version'
@@ -24,16 +25,12 @@ pipeline {
                 powershell '''
                     $war = Join-Path $env:WORKSPACE 'target/osinergmin-0.0.1-SNAPSHOT.war'
 
-                    $hayRespaldo = $false
+                    if (-not (Test-Path $war)) {
+                        throw "No se encontro el WAR generado"
+                    }
 
-                    if (Test-Path $destino) {
-                        Write-Host "Respaldando version anterior"
-                        Copy-Item $destino $respaldo -Force
-                        $hayRespaldo = $true
-                    }
-                    else {
-                        Write-Host "No existe WAR anterior. Se realizara una instalacion nueva."
-                    }
+                    Write-Host "WAR generado correctamente"
+                    Get-Item $war | Select-Object Name, Length
                 '''
             }
         }
@@ -63,12 +60,16 @@ pipeline {
 
                     New-Item -ItemType Directory -Force -Path $backups | Out-Null
 
-                    if (-not (Test-Path $destino)) {
-                        throw "No existe el WAR actual. Revisar instalacion."
-                    }
+                    $hayRespaldo = $false
 
-                    Write-Host "Respaldando version anterior"
-                    Copy-Item $destino $respaldo -Force
+                    if (Test-Path $destino) {
+                        Write-Host "Respaldando version anterior"
+                        Copy-Item $destino $respaldo -Force
+                        $hayRespaldo = $true
+                    }
+                    else {
+                        Write-Host "No existe WAR anterior. Se realizara instalacion nueva."
+                    }
 
                     $despliegueIniciado = $false
 
@@ -76,30 +77,41 @@ pipeline {
                         $despliegueIniciado = $true
 
                         Write-Host "Deteniendo Tomcat 11"
+
                         Stop-Service -Name $servicio -ErrorAction Stop
+
                         (Get-Service $servicio).WaitForStatus(
                             'Stopped',
                             [TimeSpan]::FromSeconds(60)
                         )
 
                         Write-Host "Copiando nuevo WAR"
+
                         Copy-Item $origen $destino -Force
 
                         Write-Host "Iniciando Tomcat 11"
+
                         Start-Service -Name $servicio -ErrorAction Stop
+
                         (Get-Service $servicio).WaitForStatus(
                             'Running',
                             [TimeSpan]::FromSeconds(60)
                         )
 
                         Write-Host "Verificando API"
+
                         $correcto = $false
 
                         for ($i = 1; $i -le 40; $i++) {
                             $codigo = 0
 
                             try {
-                                $respuesta = Invoke-WebRequest -Uri $url -UseBasicParsing -Proxy $null -TimeoutSec 5
+                                $respuesta = Invoke-WebRequest `
+                                    -Uri $url `
+                                    -UseBasicParsing `
+                                    -Proxy $null `
+                                    -TimeoutSec 5
+
                                 $codigo = [int]$respuesta.StatusCode
                             }
                             catch {
@@ -125,27 +137,40 @@ pipeline {
                     }
                     catch {
                         $errorOriginal = $_.Exception.Message
+
                         Write-Host "ERROR: $errorOriginal"
 
                         if ($despliegueIniciado) {
-                            Write-Host "Intentando restaurar WAR anterior"
+                            Write-Host "Intentando recuperar despliegue anterior"
 
                             try {
                                 Stop-Service -Name $servicio -ErrorAction Stop
+
                                 (Get-Service $servicio).WaitForStatus(
                                     'Stopped',
                                     [TimeSpan]::FromSeconds(60)
                                 )
 
-                                Copy-Item $respaldo $destino -Force
+                                if ($hayRespaldo) {
+                                    Write-Host "Restaurando WAR anterior"
+                                    Copy-Item $respaldo $destino -Force
+                                }
+                                else {
+                                    Write-Host "No existe respaldo anterior"
+
+                                    if (Test-Path $destino) {
+                                        Remove-Item $destino -Force
+                                    }
+                                }
 
                                 Start-Service -Name $servicio -ErrorAction Stop
+
                                 (Get-Service $servicio).WaitForStatus(
                                     'Running',
                                     [TimeSpan]::FromSeconds(60)
                                 )
 
-                                Write-Host "WAR anterior restaurado. Verificar aplicacion."
+                                Write-Host "Recuperacion ejecutada. Verificar aplicacion."
                             }
                             catch {
                                 Write-Host "Fallo la recuperacion: $($_.Exception.Message)"
