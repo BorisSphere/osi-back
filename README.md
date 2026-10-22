@@ -6,6 +6,12 @@ API REST del **Lab Modernización**: gestión de requerimientos de modernizació
 - Base de datos Oracle (esquema `APRENDIZAJE`)
 - Lo consume el frontend [`osi-front`](../osi-front)
 
+## Diagramas y contratos
+
+- [Diagrama de arquitectura](docs/diagrama-arquitectura.md)
+- [Diagrama entidad-relación](docs/diagrama-entidad-relacion.md)
+- [contrato API](docs/contrato-api.yaml)
+
 ---
 
 ## Requisitos
