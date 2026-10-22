@@ -79,7 +79,7 @@ Todo está en [`application.properties`](src/main/resources/application.properti
 | `REFRESH_EXPIRATION` | `7d` | Vida del refresh token |
 | `REFRESH_COOKIE_SECURE` | `true` | Cookie solo por HTTPS. Poner `false` solo en desarrollo con Safari |
 | `CORS_ORIGINS` | `http://localhost:4200` | Orígenes permitidos (separados por coma) |
-| `STORAGE_DIR` | `uploads` | Carpeta de archivos adjuntos (en producción, una ruta persistente) |
+| `STORAGE_DIR` | `C:/osi-uploads` | Carpeta de archivos adjuntos (en producción, una ruta persistente) |
 | `SWAGGER_ENABLED` | `true` | Swagger UI y `/v3/api-docs`. Poner `false` en producción |
 | `ADMIN_USERNAME` / `ADMIN_PASSWORD` | vacío | Coordinador inicial (ver arriba) |
 
