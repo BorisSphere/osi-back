@@ -44,9 +44,12 @@ pipeline {
                     $origen = Join-Path $env:WORKSPACE 'target/osinergmin-0.0.1-SNAPSHOT.war'
                     $webapps = 'C:/Program Files/Apache Software Foundation/Tomcat 11.0/webapps'
                     $destino = Join-Path $webapps 'osinergmin.war'
+                    # Carpeta que Tomcat descomprime del WAR: se borra para que no sirva código viejo
+                    $expandido = Join-Path $webapps 'osinergmin'
                     $backups = 'C:/TomcatBackups/osi-back'
                     $respaldo = Join-Path $backups 'osinergmin-anterior.war'
-                    $url = 'http://127.0.0.1:8092/osinergmin/api/aplicaciones'
+                    # Público y comprueba también Oracle: solo 200 confirma que la versión nueva está arriba
+                    $url = 'http://127.0.0.1:8092/osinergmin/api/health'
 
                     if (-not (Test-Path $origen)) {
                         throw "No existe el WAR generado"
@@ -85,6 +88,11 @@ pipeline {
                             [TimeSpan]::FromSeconds(60)
                         )
 
+                        if (Test-Path $expandido) {
+                            Write-Host "Eliminando carpeta desplegada anterior"
+                            Remove-Item $expandido -Recurse -Force
+                        }
+
                         Write-Host "Copiando nuevo WAR"
 
                         Copy-Item $origen $destino -Force
@@ -98,9 +106,10 @@ pipeline {
                             [TimeSpan]::FromSeconds(60)
                         )
 
-                        Write-Host "Verificando API"
+                        Write-Host "Verificando API en $url"
 
                         $correcto = $false
+                        $codigo = 0
 
                         for ($i = 1; $i -le 40; $i++) {
                             $codigo = 0
@@ -120,8 +129,8 @@ pipeline {
                                 }
                             }
 
-                            if ($codigo -in @(200, 401, 403)) {
-                                Write-Host "API responde HTTP $codigo"
+                            if ($codigo -eq 200) {
+                                Write-Host "API responde HTTP 200"
                                 $correcto = $true
                                 break
                             }
@@ -130,7 +139,8 @@ pipeline {
                         }
 
                         if (-not $correcto) {
-                            throw "La API no respondio correctamente"
+                            # 401: el WAR desplegado no tiene /api/health (versión vieja). 503: Oracle no responde.
+                            throw "La API no respondio con 200 (ultimo codigo HTTP: $codigo)"
                         }
 
                         Write-Host "Despliegue terminado"
@@ -150,6 +160,10 @@ pipeline {
                                     'Stopped',
                                     [TimeSpan]::FromSeconds(60)
                                 )
+
+                                if (Test-Path $expandido) {
+                                    Remove-Item $expandido -Recurse -Force
+                                }
 
                                 if ($hayRespaldo) {
                                     Write-Host "Restaurando WAR anterior"
