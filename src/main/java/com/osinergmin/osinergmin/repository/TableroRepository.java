@@ -64,6 +64,37 @@ public class TableroRepository {
                 rs.getString("MOTIVO")));
     }
 
+    /**
+     * Detalle de requerimientos creados en [inicio, fin) (UTC), opcionalmente de una aplicación,
+     * para el anexo del reporte. null = sin ese filtro. Mismos criterios que seguimiento().
+     */
+    public List<FilaBandeja> detalle(LocalDateTime inicioUtc, LocalDateTime finUtc, String aplicacion) {
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder sql = new StringBuilder(BANDEJA).append(" WHERE 1 = 1");
+        if (inicioUtc != null) {
+            sql.append(" AND r.FECHA_CREACION >= :inicio");
+            params.put("inicio", inicioUtc);
+        }
+        if (finUtc != null) {
+            sql.append(" AND r.FECHA_CREACION < :fin");
+            params.put("fin", finUtc);
+        }
+        if (aplicacion != null) {
+            sql.append(" AND a.CODIGO = :aplicacion");
+            params.put("aplicacion", aplicacion);
+        }
+        sql.append(" ORDER BY a.CODIGO, r.ID");
+        return jdbc.query(sql.toString(), params, (rs, i) -> new FilaBandeja(
+                rs.getLong("ID"),
+                rs.getString("TITULO"),
+                rs.getString("APLICACION"),
+                rs.getString("PRIORIDAD"),
+                Estado.valueOf(rs.getString("ESTADO")),
+                rs.getBigDecimal("HH_TOTAL"),
+                rs.getObject("FECHA_CREACION", LocalDateTime.class),
+                rs.getString("MOTIVO")));
+    }
+
     public long contarAplicaciones() {
         Long n = jdbc.queryForObject("SELECT COUNT(*) FROM LAB_APLICACION", Map.of(), Long.class);
         return n == null ? 0 : n;
