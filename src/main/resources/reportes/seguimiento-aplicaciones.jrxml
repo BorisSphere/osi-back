@@ -1,0 +1,131 @@
+<!-- Subreporte de seguimiento.jrxml: resumen por aplicación con % del total y fila de totales.
+     Una fila por aplicación (mapas con las claves de los fields). -->
+<jasperReport name="SeguimientoAplicaciones" pageWidth="515" pageHeight="842" columnWidth="515" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="c304fc47-8ff5-4f89-9e62-01f1ca44086c">
+	<style name="Base" default="true" fontName="DejaVu Sans" fontSize="8.0" forecolor="#1E293B"/>
+	<style name="Cabecera" fontName="DejaVu Sans" fontSize="8.0" bold="true" forecolor="#FFFFFF" backcolor="#0F2647" mode="Opaque">
+		<box leftPadding="5" rightPadding="5"/>
+	</style>
+	<style name="Fila" fontName="DejaVu Sans" fontSize="8.0" mode="Opaque" backcolor="#FFFFFF">
+		<conditionalStyle backcolor="#F1F5F9">
+			<conditionExpression><![CDATA[$V{REPORT_COUNT} % 2 == 0]]></conditionExpression>
+		</conditionalStyle>
+		<box leftPadding="5" rightPadding="5">
+			<bottomPen lineWidth="0.5" lineColor="#E2E8F0"/>
+		</box>
+	</style>
+	<style name="Total" fontName="DejaVu Sans" fontSize="8.0" bold="true" mode="Opaque" backcolor="#E2E8F0">
+		<box leftPadding="5" rightPadding="5"/>
+	</style>
+
+	<field name="codigo" class="java.lang.String"/>
+	<field name="nombre" class="java.lang.String"/>
+	<field name="registrados" class="java.lang.Long"/>
+	<field name="estimados" class="java.lang.Long"/>
+	<field name="aprobados" class="java.lang.Long"/>
+	<field name="rechazados" class="java.lang.Long"/>
+	<field name="total" class="java.lang.Long"/>
+	<field name="porcentaje" class="java.lang.Double"/>
+	<field name="hhAprobadas" class="java.math.BigDecimal"/>
+
+	<variable name="SumRegistrados" calculation="Sum" class="java.lang.Long">
+		<expression><![CDATA[$F{registrados}]]></expression>
+	</variable>
+	<variable name="SumEstimados" calculation="Sum" class="java.lang.Long">
+		<expression><![CDATA[$F{estimados}]]></expression>
+	</variable>
+	<variable name="SumAprobados" calculation="Sum" class="java.lang.Long">
+		<expression><![CDATA[$F{aprobados}]]></expression>
+	</variable>
+	<variable name="SumRechazados" calculation="Sum" class="java.lang.Long">
+		<expression><![CDATA[$F{rechazados}]]></expression>
+	</variable>
+	<variable name="SumTotal" calculation="Sum" class="java.lang.Long">
+		<expression><![CDATA[$F{total}]]></expression>
+	</variable>
+	<variable name="SumHoras" calculation="Sum" class="java.math.BigDecimal">
+		<expression><![CDATA[$F{hhAprobadas}]]></expression>
+	</variable>
+
+	<columnHeader height="18">
+		<element kind="staticText" uuid="a232ef43-6869-415e-b743-9e40045e4b0e" x="0" y="0" width="175" height="18" vTextAlign="Middle" style="Cabecera">
+			<text><![CDATA[Aplicación]]></text>
+		</element>
+		<element kind="staticText" uuid="3d8033a4-c747-4d38-9bc7-acacb103e1ca" x="175" y="0" width="50" height="18" hTextAlign="Right" vTextAlign="Middle" style="Cabecera">
+			<text><![CDATA[Registr.]]></text>
+		</element>
+		<element kind="staticText" uuid="dd6b7367-fcb2-4644-9d24-0ec326dcdfcf" x="225" y="0" width="50" height="18" hTextAlign="Right" vTextAlign="Middle" style="Cabecera">
+			<text><![CDATA[Estim.]]></text>
+		</element>
+		<element kind="staticText" uuid="f94bc4d6-8555-450c-a36a-f3b9d8aeaa38" x="275" y="0" width="50" height="18" hTextAlign="Right" vTextAlign="Middle" style="Cabecera">
+			<text><![CDATA[Aprob.]]></text>
+		</element>
+		<element kind="staticText" uuid="3d12a5f7-f37c-4d28-b47b-605fdc1de93b" x="325" y="0" width="50" height="18" hTextAlign="Right" vTextAlign="Middle" style="Cabecera">
+			<text><![CDATA[Rechaz.]]></text>
+		</element>
+		<element kind="staticText" uuid="97f2ea66-d279-4033-be1c-c01304cb5378" x="375" y="0" width="45" height="18" hTextAlign="Right" vTextAlign="Middle" style="Cabecera">
+			<text><![CDATA[Total]]></text>
+		</element>
+		<element kind="staticText" uuid="68626c19-30df-4457-9aab-9bdc6ac22ce6" x="420" y="0" width="40" height="18" hTextAlign="Right" vTextAlign="Middle" style="Cabecera">
+			<text><![CDATA[%]]></text>
+		</element>
+		<element kind="staticText" uuid="303c6462-3431-4f58-9aa1-c1ebb4421255" x="460" y="0" width="55" height="18" hTextAlign="Right" vTextAlign="Middle" style="Cabecera">
+			<text><![CDATA[HH aprob.]]></text>
+		</element>
+	</columnHeader>
+
+	<detail>
+		<band height="16">
+			<element kind="textField" uuid="b02022ab-8840-4ec6-90e0-932bca2b1d05" x="0" y="0" width="175" height="16" vTextAlign="Middle" textAdjust="ScaleFont" style="Fila">
+				<expression><![CDATA[$F{codigo} + ($F{nombre} == null ? "" : " · " + $F{nombre})]]></expression>
+			</element>
+			<element kind="textField" uuid="8dfce771-3e16-4686-9356-bba7e25ce31a" x="175" y="0" width="50" height="16" hTextAlign="Right" vTextAlign="Middle" style="Fila">
+				<expression><![CDATA[$F{registrados}]]></expression>
+			</element>
+			<element kind="textField" uuid="3e369b73-8bfc-4a08-91e4-033cae0d0a8c" x="225" y="0" width="50" height="16" hTextAlign="Right" vTextAlign="Middle" style="Fila">
+				<expression><![CDATA[$F{estimados}]]></expression>
+			</element>
+			<element kind="textField" uuid="32bcf839-3b3b-4293-a96b-c08d5e06038f" x="275" y="0" width="50" height="16" hTextAlign="Right" vTextAlign="Middle" style="Fila">
+				<expression><![CDATA[$F{aprobados}]]></expression>
+			</element>
+			<element kind="textField" uuid="a152a2dc-503a-4d2a-bea3-e2343bf7f480" x="325" y="0" width="50" height="16" hTextAlign="Right" vTextAlign="Middle" style="Fila">
+				<expression><![CDATA[$F{rechazados}]]></expression>
+			</element>
+			<element kind="textField" uuid="cab8d3f0-377e-4497-b21b-80195494e66e" x="375" y="0" width="45" height="16" hTextAlign="Right" vTextAlign="Middle" bold="true" style="Fila">
+				<expression><![CDATA[$F{total}]]></expression>
+			</element>
+			<element kind="textField" uuid="d2405276-1284-430c-9ab6-6e94320e2e04" x="420" y="0" width="40" height="16" hTextAlign="Right" vTextAlign="Middle" pattern="0.0%" style="Fila">
+				<expression><![CDATA[$F{porcentaje}]]></expression>
+			</element>
+			<element kind="textField" uuid="cd5cbdd6-dacc-4bd3-a63b-d51d0e9821e4" x="460" y="0" width="55" height="16" hTextAlign="Right" vTextAlign="Middle" pattern="#,##0.00" style="Fila">
+				<expression><![CDATA[$F{hhAprobadas}]]></expression>
+			</element>
+		</band>
+	</detail>
+
+	<summary height="18">
+		<element kind="staticText" uuid="4b1f33e6-8189-4367-81aa-b6d3ac895caf" x="0" y="0" width="175" height="18" vTextAlign="Middle" style="Total">
+			<text><![CDATA[Total]]></text>
+		</element>
+		<element kind="textField" uuid="6c6eb848-29c0-4da0-9232-f62dcaa1900e" x="175" y="0" width="50" height="18" hTextAlign="Right" vTextAlign="Middle" style="Total">
+			<expression><![CDATA[$V{SumRegistrados}]]></expression>
+		</element>
+		<element kind="textField" uuid="ef6622d4-7e5e-40d9-b549-f26215a6ec95" x="225" y="0" width="50" height="18" hTextAlign="Right" vTextAlign="Middle" style="Total">
+			<expression><![CDATA[$V{SumEstimados}]]></expression>
+		</element>
+		<element kind="textField" uuid="b562a54a-90f5-41c4-af1a-e65c289caf9a" x="275" y="0" width="50" height="18" hTextAlign="Right" vTextAlign="Middle" style="Total">
+			<expression><![CDATA[$V{SumAprobados}]]></expression>
+		</element>
+		<element kind="textField" uuid="05a36f31-46a2-4e73-96b7-60d4ec7796c9" x="325" y="0" width="50" height="18" hTextAlign="Right" vTextAlign="Middle" style="Total">
+			<expression><![CDATA[$V{SumRechazados}]]></expression>
+		</element>
+		<element kind="textField" uuid="9df7d84d-1078-458b-8efb-9844a4fca3c7" x="375" y="0" width="45" height="18" hTextAlign="Right" vTextAlign="Middle" style="Total">
+			<expression><![CDATA[$V{SumTotal}]]></expression>
+		</element>
+		<element kind="staticText" uuid="f6e13673-ccc9-41b4-94c9-96f4b76c0f72" x="420" y="0" width="40" height="18" hTextAlign="Right" vTextAlign="Middle" style="Total">
+			<text><![CDATA[100%]]></text>
+		</element>
+		<element kind="textField" uuid="8e769371-bfdd-49f6-8516-f77640996f0c" x="460" y="0" width="55" height="18" hTextAlign="Right" vTextAlign="Middle" pattern="#,##0.00" style="Total">
+			<expression><![CDATA[$V{SumHoras}]]></expression>
+		</element>
+	</summary>
+</jasperReport>

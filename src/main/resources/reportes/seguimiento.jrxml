@@ -1,0 +1,250 @@
+<!-- Reporte de seguimiento de requerimientos (RF08). Formato JasperReports 7.
+     Página 1: encabezado, filtros, indicadores, gráficos y resumen por aplicación (subreporte).
+     Detalle (datos principales): un requerimiento por fila (anexo), con filas alternadas.
+     Todos los números salen de TableroService, igual que la pantalla de Reportes. -->
+<jasperReport name="SeguimientoRequerimientos" pageWidth="595" pageHeight="842" columnWidth="515" leftMargin="40" rightMargin="40" topMargin="36" bottomMargin="36" whenNoDataType="AllSectionsNoDetail" uuid="aca36164-b52c-4956-a489-4ac46674b8bd">
+	<property name="net.sf.jasperreports.export.xls.detect.cell.type" value="true"/>
+	<property name="net.sf.jasperreports.export.xls.remove.empty.space.between.rows" value="true"/>
+	<property name="net.sf.jasperreports.export.xls.remove.empty.space.between.columns" value="true"/>
+	<property name="net.sf.jasperreports.export.xls.white.page.background" value="false"/>
+	<property name="net.sf.jasperreports.export.xls.sheet.names.all" value="Seguimiento"/>
+	<style name="Base" default="true" fontName="DejaVu Sans" fontSize="8.0" forecolor="#1E293B"/>
+	<style name="Cabecera" fontName="DejaVu Sans" fontSize="8.0" bold="true" forecolor="#FFFFFF" backcolor="#0F2647" mode="Opaque">
+		<box leftPadding="5" rightPadding="5"/>
+	</style>
+	<style name="Fila" fontName="DejaVu Sans" fontSize="8.0" mode="Opaque" backcolor="#FFFFFF">
+		<conditionalStyle backcolor="#F1F5F9">
+			<conditionExpression><![CDATA[$V{REPORT_COUNT} % 2 == 0]]></conditionExpression>
+		</conditionalStyle>
+		<box leftPadding="5" rightPadding="5">
+			<bottomPen lineWidth="0.5" lineColor="#E2E8F0"/>
+		</box>
+	</style>
+	<style name="Seccion" fontName="DejaVu Sans" fontSize="11.0" bold="true" forecolor="#0F2647"/>
+
+	<dataset name="Estados" uuid="6c619a9f-af98-4afd-b90a-5cf18cdbd1ab">
+		<field name="estado" class="java.lang.String"/>
+		<field name="cantidad" class="java.lang.Long"/>
+	</dataset>
+	<dataset name="HorasPorAplicacion" uuid="931aa225-bee8-44d1-a43d-b44ca3f8ef29">
+		<field name="aplicacion" class="java.lang.String"/>
+		<field name="horas" class="java.math.BigDecimal"/>
+	</dataset>
+
+	<parameter name="FILTROS" class="java.lang.String"/>
+	<parameter name="GENERADO_POR" class="java.lang.String"/>
+	<parameter name="FECHA_GENERACION" class="java.lang.String"/>
+	<parameter name="TOTAL" class="java.lang.Long"/>
+	<parameter name="TOTAL_REGISTRADOS" class="java.lang.Long"/>
+	<parameter name="TOTAL_ESTIMADOS" class="java.lang.Long"/>
+	<parameter name="TOTAL_APROBADOS" class="java.lang.Long"/>
+	<parameter name="TOTAL_RECHAZADOS" class="java.lang.Long"/>
+	<parameter name="TOTAL_HH_APROBADAS" class="java.math.BigDecimal"/>
+	<parameter name="HAY_HORAS" class="java.lang.Boolean"/>
+	<parameter name="ESTADOS_DS" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="HORAS_DS" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="APLICACIONES_DS" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="APLICACIONES_REPORT" class="net.sf.jasperreports.engine.JasperReport"/>
+
+	<field name="codigo" class="java.lang.String"/>
+	<field name="titulo" class="java.lang.String"/>
+	<field name="aplicacion" class="java.lang.String"/>
+	<field name="prioridad" class="java.lang.String"/>
+	<field name="estado" class="java.lang.String"/>
+	<field name="hhTotal" class="java.math.BigDecimal"/>
+	<field name="fecha" class="java.lang.String"/>
+
+	<title height="470">
+		<!-- Banda institucional -->
+		<element kind="staticText" uuid="0a4e1eab-7fe9-45a4-b5bc-c38d924845c6" mode="Opaque" x="0" y="0" width="515" height="18" backcolor="#0F2647" forecolor="#93C5FD" fontSize="7.5" bold="true" vTextAlign="Bottom">
+			<text><![CDATA[⚙  LAB MODERNIZACIÓN · GESTIÓN DE REQUERIMIENTOS DE MODERNIZACIÓN TECNOLÓGICA]]></text>
+			<box leftPadding="12"/>
+		</element>
+		<element kind="staticText" uuid="cdcd5100-c419-459b-ae00-6d84bcdb46e1" mode="Opaque" x="0" y="18" width="515" height="34" backcolor="#0F2647" forecolor="#FFFFFF" fontSize="17.0" bold="true" vTextAlign="Middle">
+			<text><![CDATA[Reporte de seguimiento de requerimientos]]></text>
+			<box leftPadding="12"/>
+		</element>
+		<!-- Filtros -->
+		<element kind="textField" uuid="7aa7310f-16c2-497b-8e7b-f49c685a1702" mode="Opaque" x="0" y="58" width="515" height="16" backcolor="#F1F5F9" forecolor="#1E293B" vTextAlign="Middle" bold="true">
+			<expression><![CDATA["Filtros:  " + $P{FILTROS}]]></expression>
+			<box leftPadding="12"/>
+		</element>
+		<element kind="textField" uuid="78e4acaa-b25b-4944-aa63-49a95a152382" mode="Opaque" x="0" y="74" width="515" height="16" backcolor="#F1F5F9" forecolor="#475569" vTextAlign="Middle">
+			<expression><![CDATA["Generado por " + $P{GENERADO_POR} + " el " + $P{FECHA_GENERACION}]]></expression>
+			<box leftPadding="12"/>
+		</element>
+
+		<!-- Indicadores (6 tarjetas pegadas: así el Excel no genera columnas vacías entre ellas) -->
+		<element kind="staticText" uuid="84fc6f3c-ad70-4875-af05-8adbc9b4fd9b" mode="Opaque" x="0" y="98" width="86" height="16" backcolor="#E2E8F0" forecolor="#475569" hTextAlign="Center" vTextAlign="Middle" fontSize="7.5">
+			<text><![CDATA[Total]]></text>
+		</element>
+		<element kind="staticText" uuid="aeefaca0-0c83-430c-849a-d21aa99d1f5a" mode="Opaque" x="86" y="98" width="86" height="16" backcolor="#DBEAFE" forecolor="#1D4ED8" hTextAlign="Center" vTextAlign="Middle" fontSize="7.5">
+			<text><![CDATA[Registrados]]></text>
+		</element>
+		<element kind="staticText" uuid="c652a116-244a-472f-9b47-783b71dc740f" mode="Opaque" x="172" y="98" width="86" height="16" backcolor="#FEF3C7" forecolor="#B45309" hTextAlign="Center" vTextAlign="Middle" fontSize="7.5">
+			<text><![CDATA[Estimados]]></text>
+		</element>
+		<element kind="staticText" uuid="f04c43c0-539c-478c-96b1-de696181c7ba" mode="Opaque" x="258" y="98" width="86" height="16" backcolor="#DCFCE7" forecolor="#15803D" hTextAlign="Center" vTextAlign="Middle" fontSize="7.5">
+			<text><![CDATA[Aprobados]]></text>
+		</element>
+		<element kind="staticText" uuid="08504708-e1dd-4b9d-8c9f-463e36e0a1d0" mode="Opaque" x="344" y="98" width="86" height="16" backcolor="#FEE2E2" forecolor="#B91C1C" hTextAlign="Center" vTextAlign="Middle" fontSize="7.5">
+			<text><![CDATA[Rechazados]]></text>
+		</element>
+		<element kind="staticText" uuid="39bb60c3-0a82-4836-8f83-c0e81107db60" mode="Opaque" x="430" y="98" width="85" height="16" backcolor="#0F2647" forecolor="#BFDBFE" hTextAlign="Center" vTextAlign="Middle" fontSize="7.5">
+			<text><![CDATA[HH aprobadas]]></text>
+		</element>
+		<element kind="textField" uuid="d1062569-c09d-40ad-9712-ffb1f7fb9cc9" mode="Opaque" x="0" y="114" width="86" height="30" backcolor="#E2E8F0" hTextAlign="Center" vTextAlign="Middle" fontSize="16.0" bold="true">
+			<expression><![CDATA[$P{TOTAL}]]></expression>
+		</element>
+		<element kind="textField" uuid="1c10fd8c-f865-41f2-a490-7c4adf8caa32" mode="Opaque" x="86" y="114" width="86" height="30" backcolor="#DBEAFE" forecolor="#1D4ED8" hTextAlign="Center" vTextAlign="Middle" fontSize="16.0" bold="true">
+			<expression><![CDATA[$P{TOTAL_REGISTRADOS}]]></expression>
+		</element>
+		<element kind="textField" uuid="85d3f064-0322-477f-8b1c-f906bbebd500" mode="Opaque" x="172" y="114" width="86" height="30" backcolor="#FEF3C7" forecolor="#B45309" hTextAlign="Center" vTextAlign="Middle" fontSize="16.0" bold="true">
+			<expression><![CDATA[$P{TOTAL_ESTIMADOS}]]></expression>
+		</element>
+		<element kind="textField" uuid="a600f792-2d7e-4213-82d8-103642c8d306" mode="Opaque" x="258" y="114" width="86" height="30" backcolor="#DCFCE7" forecolor="#15803D" hTextAlign="Center" vTextAlign="Middle" fontSize="16.0" bold="true">
+			<expression><![CDATA[$P{TOTAL_APROBADOS}]]></expression>
+		</element>
+		<element kind="textField" uuid="d5042145-e310-452b-9ed9-adaf4b64d16a" mode="Opaque" x="344" y="114" width="86" height="30" backcolor="#FEE2E2" forecolor="#B91C1C" hTextAlign="Center" vTextAlign="Middle" fontSize="16.0" bold="true">
+			<expression><![CDATA[$P{TOTAL_RECHAZADOS}]]></expression>
+		</element>
+		<element kind="textField" uuid="d3241b16-bbd5-4067-aaa4-897c20c922fe" mode="Opaque" x="430" y="114" width="85" height="30" backcolor="#0F2647" forecolor="#FFFFFF" hTextAlign="Center" vTextAlign="Middle" fontSize="14.0" bold="true" pattern="#,##0.00">
+			<expression><![CDATA[$P{TOTAL_HH_APROBADAS}]]></expression>
+		</element>
+
+		<!-- Gráficos -->
+		<element kind="staticText" uuid="fead642c-1999-4a2b-ac6c-5145333a5529" x="0" y="156" width="252" height="16" style="Seccion">
+			<text><![CDATA[Requerimientos por estado]]></text>
+		</element>
+		<element kind="staticText" uuid="703419de-52d7-42f4-91e9-9e4556d1b322" x="263" y="156" width="252" height="16" style="Seccion">
+			<text><![CDATA[HH aprobadas por aplicación]]></text>
+		</element>
+		<element kind="chart" chartType="bar" uuid="a6bd58fe-033c-4aa5-b435-eddce5c52740" x="0" y="174" width="252" height="170" customizerClass="com.osinergmin.osinergmin.reportes.GraficoEstadosCustomizer">
+			<printWhenExpression><![CDATA[$P{TOTAL} > 0]]></printWhenExpression>
+			<dataset kind="category">
+				<datasetRun uuid="7ab94ef2-1ee1-405d-842a-a0a128aea91b" subDataset="Estados">
+					<dataSourceExpression><![CDATA[$P{ESTADOS_DS}]]></dataSourceExpression>
+				</datasetRun>
+				<series>
+					<seriesExpression><![CDATA["Requerimientos"]]></seriesExpression>
+					<categoryExpression><![CDATA[$F{estado}]]></categoryExpression>
+					<valueExpression><![CDATA[$F{cantidad}]]></valueExpression>
+				</series>
+			</dataset>
+			<plot/>
+		</element>
+		<element kind="staticText" uuid="dbfe919f-6eb8-4964-bbbb-ee394a2638c3" x="0" y="174" width="252" height="30" forecolor="#475569" italic="true" vTextAlign="Middle">
+			<printWhenExpression><![CDATA[$P{TOTAL} == 0]]></printWhenExpression>
+			<text><![CDATA[Sin requerimientos en el período.]]></text>
+		</element>
+		<element kind="chart" chartType="bar" uuid="4e84023b-7a08-4ffe-a589-07e0534ed1b4" x="263" y="174" width="252" height="170" customizerClass="com.osinergmin.osinergmin.reportes.GraficoHorasCustomizer">
+			<printWhenExpression><![CDATA[$P{HAY_HORAS}]]></printWhenExpression>
+			<dataset kind="category">
+				<datasetRun uuid="9fe2a8d9-b97d-41a2-a238-18c3a56f97d8" subDataset="HorasPorAplicacion">
+					<dataSourceExpression><![CDATA[$P{HORAS_DS}]]></dataSourceExpression>
+				</datasetRun>
+				<series>
+					<seriesExpression><![CDATA["HH aprobadas"]]></seriesExpression>
+					<categoryExpression><![CDATA[$F{aplicacion}]]></categoryExpression>
+					<valueExpression><![CDATA[$F{horas}]]></valueExpression>
+				</series>
+			</dataset>
+			<plot/>
+		</element>
+		<element kind="staticText" uuid="ba094a48-8250-4551-a54d-faf7ebbaa3d1" x="263" y="174" width="252" height="30" forecolor="#475569" italic="true" vTextAlign="Middle">
+			<printWhenExpression><![CDATA[!$P{HAY_HORAS}]]></printWhenExpression>
+			<text><![CDATA[Sin horas aprobadas en el período.]]></text>
+		</element>
+
+		<!-- Resumen por aplicación (subreporte: puede crecer hacia abajo) -->
+		<element kind="staticText" uuid="be9d79f8-47fb-4701-8250-04fc761fb815" x="0" y="356" width="515" height="18" style="Seccion">
+			<text><![CDATA[Resumen por aplicación]]></text>
+		</element>
+		<element kind="subreport" uuid="06a01482-9030-4c2a-b7c9-f10f6d54a83c" x="0" y="376" width="515" height="40">
+			<dataSourceExpression><![CDATA[$P{APLICACIONES_DS}]]></dataSourceExpression>
+			<expression><![CDATA[$P{APLICACIONES_REPORT}]]></expression>
+		</element>
+
+		<!-- Título del anexo: flota debajo del resumen si este crece -->
+		<element kind="staticText" uuid="302602e2-18e0-49a6-a97d-640be52bf840" positionType="Float" x="0" y="430" width="515" height="18" style="Seccion">
+			<text><![CDATA[Detalle de requerimientos]]></text>
+		</element>
+		<element kind="textField" uuid="1236dc3f-10e9-4d00-af74-a56aa2b7cb52" positionType="Float" x="0" y="448" width="515" height="16" forecolor="#475569">
+			<expression><![CDATA[$P{TOTAL} + ($P{TOTAL} == 1 ? " requerimiento" : " requerimientos") + " en el período, ordenados por aplicación."]]></expression>
+		</element>
+	</title>
+
+	<columnHeader height="18">
+		<element kind="staticText" uuid="a1c94117-5a3e-4c45-9cfe-4b5b226c92e8" x="0" y="0" width="58" height="18" vTextAlign="Middle" style="Cabecera">
+			<text><![CDATA[Código]]></text>
+		</element>
+		<element kind="staticText" uuid="afdba158-c25b-4e4e-86fc-2c418dc5dd37" x="58" y="0" width="177" height="18" vTextAlign="Middle" style="Cabecera">
+			<text><![CDATA[Título]]></text>
+		</element>
+		<element kind="staticText" uuid="b6d9b80a-3f73-4b37-8fa3-d6e16cf9f411" x="235" y="0" width="58" height="18" vTextAlign="Middle" style="Cabecera">
+			<text><![CDATA[Aplicación]]></text>
+		</element>
+		<element kind="staticText" uuid="f652ebd5-0812-4eaa-92fd-89a53bbf1dbc" x="293" y="0" width="52" height="18" vTextAlign="Middle" style="Cabecera">
+			<text><![CDATA[Prioridad]]></text>
+		</element>
+		<element kind="staticText" uuid="c1cbe275-b51e-42e5-8136-477f11c436bb" x="345" y="0" width="64" height="18" vTextAlign="Middle" style="Cabecera">
+			<text><![CDATA[Estado]]></text>
+		</element>
+		<element kind="staticText" uuid="6610b9e6-a58e-4035-a861-5aec6301cfd4" x="409" y="0" width="42" height="18" hTextAlign="Right" vTextAlign="Middle" style="Cabecera">
+			<text><![CDATA[HH]]></text>
+		</element>
+		<element kind="staticText" uuid="ce1a0e9f-6f89-4174-aed1-4c5f3d4f0a30" x="451" y="0" width="64" height="18" hTextAlign="Center" vTextAlign="Middle" style="Cabecera">
+			<text><![CDATA[Registro]]></text>
+		</element>
+	</columnHeader>
+
+	<detail>
+		<band height="16">
+			<element kind="textField" uuid="c1fcf8bd-4e65-4623-8a1b-12c8fe6be425" x="0" y="0" width="58" height="16" vTextAlign="Middle" bold="true" style="Fila">
+				<expression><![CDATA[$F{codigo}]]></expression>
+			</element>
+			<element kind="textField" uuid="54f0be0b-c6fd-4943-b511-a6ce78ffb980" x="58" y="0" width="177" height="16" vTextAlign="Middle" textAdjust="ScaleFont" style="Fila">
+				<expression><![CDATA[$F{titulo}]]></expression>
+			</element>
+			<element kind="textField" uuid="be473bcd-2e77-4fc2-9ed8-dff85d91421c" x="235" y="0" width="58" height="16" vTextAlign="Middle" style="Fila">
+				<expression><![CDATA[$F{aplicacion}]]></expression>
+			</element>
+			<element kind="textField" uuid="cfb57c4e-9abe-416d-8073-d14771f96abc" x="293" y="0" width="52" height="16" vTextAlign="Middle" style="Fila">
+				<expression><![CDATA[$F{prioridad}]]></expression>
+			</element>
+			<element kind="textField" uuid="fb82f494-345f-40b3-adb8-5adf5d3388bc" x="345" y="0" width="64" height="16" vTextAlign="Middle" bold="true" style="Fila">
+				<expression><![CDATA[$F{estado}]]></expression>
+			</element>
+			<element kind="textField" uuid="3ffa2be8-322c-4a81-9468-b1c313bf5a8e" x="409" y="0" width="42" height="16" hTextAlign="Right" vTextAlign="Middle" pattern="#,##0.00" blankWhenNull="true" style="Fila">
+				<expression><![CDATA[$F{hhTotal}]]></expression>
+			</element>
+			<element kind="textField" uuid="31426f54-037a-4a85-bd08-335df43ce3fc" x="451" y="0" width="64" height="16" hTextAlign="Center" vTextAlign="Middle" style="Fila">
+				<expression><![CDATA[$F{fecha}]]></expression>
+			</element>
+		</band>
+	</detail>
+
+	<pageFooter height="22">
+		<element kind="staticText" uuid="90385904-73d2-4076-b00f-8cf053f1d452" x="0" y="6" width="415" height="14" fontSize="7.0" forecolor="#64748B">
+			<printWhenExpression><![CDATA[!$P{IS_IGNORE_PAGINATION}]]></printWhenExpression>
+			<text><![CDATA[Documento generado automáticamente por Lab Modernización · Datos de laboratorio]]></text>
+			<box>
+				<topPen lineWidth="0.5" lineColor="#CBD5E1"/>
+			</box>
+		</element>
+		<element kind="textField" uuid="7a8f0cd6-786b-4673-b157-a34d214a0ed6" x="415" y="6" width="100" height="14" fontSize="7.0" forecolor="#64748B" hTextAlign="Right">
+			<printWhenExpression><![CDATA[!$P{IS_IGNORE_PAGINATION}]]></printWhenExpression>
+			<expression><![CDATA["Página " + $V{PAGE_NUMBER}]]></expression>
+			<box>
+				<topPen lineWidth="0.5" lineColor="#CBD5E1"/>
+			</box>
+		</element>
+	</pageFooter>
+
+	<summary height="24">
+		<element kind="staticText" uuid="4af7888d-4a66-4045-970a-fd283299b961" x="0" y="6" width="515" height="16" forecolor="#475569" italic="true">
+			<printWhenExpression><![CDATA[$V{REPORT_COUNT} == 0]]></printWhenExpression>
+			<text><![CDATA[No hay requerimientos para los filtros seleccionados.]]></text>
+		</element>
+	</summary>
+</jasperReport>

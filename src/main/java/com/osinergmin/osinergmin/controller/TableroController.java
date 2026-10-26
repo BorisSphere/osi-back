@@ -3,10 +3,18 @@ package com.osinergmin.osinergmin.controller;
 import com.osinergmin.osinergmin.dto.DashboardResumenResponse;
 import com.osinergmin.osinergmin.dto.RequerimientoBandejaResponse;
 import com.osinergmin.osinergmin.dto.SeguimientoResponse;
+import com.osinergmin.osinergmin.service.ReporteExportService;
+import com.osinergmin.osinergmin.service.ReporteExportService.Archivo;
 import com.osinergmin.osinergmin.service.TableroService;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,9 +27,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class TableroController {
 
     private final TableroService tableroService;
+    private final ReporteExportService reporteExportService;
 
-    public TableroController(TableroService tableroService) {
+    public TableroController(TableroService tableroService, ReporteExportService reporteExportService) {
         this.tableroService = tableroService;
+        this.reporteExportService = reporteExportService;
     }
 
     /** Bandeja de estimación y aprobación: ?estado=ESTIMADO&estado=APROBADO (sin estado = todos). */
@@ -42,5 +52,22 @@ public class TableroController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
             @RequestParam(required = false) String aplicacion) {
         return tableroService.seguimiento(desde, hasta, aplicacion);
+    }
+
+    /** Descarga del seguimiento: ?formato=pdf|xlsx más los mismos filtros de /seguimiento. */
+    @GetMapping("/api/reportes/seguimiento/exportar")
+    public ResponseEntity<byte[]> exportarSeguimiento(
+            @RequestParam(defaultValue = "pdf") String formato,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+            @RequestParam(required = false) String aplicacion,
+            @AuthenticationPrincipal Jwt jwt) {
+        Archivo archivo = reporteExportService.seguimiento(
+                ReporteExportService.Formato.desde(formato), desde, hasta, aplicacion, jwt.getSubject());
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(archivo.contentType()))
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.attachment().filename(archivo.nombre()).build().toString())
+                .body(archivo.contenido());
     }
 }
