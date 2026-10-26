@@ -3,6 +3,7 @@ package com.osinergmin.osinergmin.config;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.osinergmin.osinergmin.security.JsonAuthenticationEntryPoint;
 import com.osinergmin.osinergmin.security.JwtProperties;
+import com.osinergmin.osinergmin.security.MetricsProperties;
 import com.osinergmin.osinergmin.security.RefreshTokenProperties;
 import com.osinergmin.osinergmin.security.RolAuthoritiesConverter;
 import java.nio.charset.StandardCharsets;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
@@ -21,6 +23,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,6 +34,7 @@ import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -38,11 +42,32 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableMethodSecurity
-@EnableConfigurationProperties({JwtProperties.class, RefreshTokenProperties.class})
+@EnableConfigurationProperties({JwtProperties.class, RefreshTokenProperties.class, MetricsProperties.class})
 public class SecurityConfig {
+
+    /**
+     * Actuator: health público y el resto (métricas para Prometheus) con HTTP Basic y el usuario técnico
+     * de app.metrics. Va antes que la cadena del JWT y solo atiende /actuator/**.
+     */
+    @Bean
+    @Order(1)
+    public SecurityFilterChain actuatorSecurityFilterChain(HttpSecurity http, MetricsProperties metrics,
+            PasswordEncoder passwordEncoder) throws Exception {
+        http
+                .securityMatcher("/actuator/**")
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/actuator/health").permitAll()
+                        .anyRequest().hasRole("METRICS"))
+                .httpBasic(Customizer.withDefaults())
+                .authenticationManager(metricsAuthenticationManager(metrics, passwordEncoder));
+        return http.build();
+    }
 
     /** Rutas públicas y protegidas. Los permisos finos van con @PreAuthorize(hasAuthority) en cada controlador. */
     @Bean
+    @Order(2)
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JsonAuthenticationEntryPoint jsonEntryPoint)
             throws Exception {
         http
@@ -77,6 +102,21 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(UserDetailsService userDetailsService,
             PasswordEncoder passwordEncoder) {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder);
+        return new ProviderManager(provider);
+    }
+
+    /** No es un @Bean para no competir con el AuthenticationManager de los usuarios de la aplicación. */
+    private static AuthenticationManager metricsAuthenticationManager(MetricsProperties metrics,
+            PasswordEncoder passwordEncoder) {
+        InMemoryUserDetailsManager usuarios = new InMemoryUserDetailsManager();
+        if (metrics.habilitado()) {
+            usuarios.createUser(User.withUsername(metrics.username())
+                    .password(passwordEncoder.encode(metrics.password()))
+                    .roles("METRICS")
+                    .build());
+        }
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(usuarios);
         provider.setPasswordEncoder(passwordEncoder);
         return new ProviderManager(provider);
     }

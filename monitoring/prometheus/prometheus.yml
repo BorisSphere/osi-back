@@ -1,0 +1,16 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: osi-back
+    # Desarrollo con ./mvnw spring-boot:run (sin context-path). En el servidor Windows, con el WAR
+    # desplegado en Tomcat 11 como osinergmin.war, usar /osinergmin/actuator/prometheus
+    metrics_path: /actuator/prometheus
+    basic_auth:
+      username: prometheus # debe coincidir con METRICS_USERNAME del backend
+      password_file: /etc/prometheus/metrics_password
+    static_configs:
+      - targets: ["host.docker.internal:8092"]
+        labels:
+          env: dev

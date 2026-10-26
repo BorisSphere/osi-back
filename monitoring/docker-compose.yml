@@ -1,0 +1,73 @@
+# Prometheus + Grafana para osi-back.
+# Uso: cp .env.example .env, escribir la contraseña de métricas en secrets/metrics_password y luego
+#   docker compose up -d
+# Prometheus: http://localhost:9090  |  Grafana: http://localhost:3000
+services:
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    container_name: osi-prometheus
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-15d}
+      # Guarda el trace_id junto a las métricas para saltar de un gráfico a la traza en Tempo
+      - --enable-feature=exemplar-storage
+      # Recibe las métricas que Tempo genera a partir de las trazas
+      - --web.enable-remote-write-receiver
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./secrets/metrics_password:/etc/prometheus/metrics_password:ro
+      - prometheus-data:/prometheus
+    # El backend corre fuera de Docker (Tomcat o mvnw): host.docker.internal apunta a la máquina anfitriona
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  grafana:
+    image: grafana/grafana:12.1.1
+    container_name: osi-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Definir GRAFANA_ADMIN_PASSWORD en .env}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+      - tempo
+
+  # Tempo corre como usuario 10001: este contenedor solo le da permisos sobre su volumen y termina
+  tempo-init:
+    image: &tempoImage grafana/tempo:2.8.1
+    user: root
+    entrypoint: ["chown", "10001:10001", "/var/tempo"]
+    volumes:
+      - tempo-data:/var/tempo
+
+  # Recibe las trazas que envía osi-back por OTLP (puerto 4318) y Grafana las consulta por el 3200
+  tempo:
+    image: *tempoImage
+    container_name: osi-tempo
+    restart: unless-stopped
+    command: ["-config.file=/etc/tempo.yml"]
+    ports:
+      - "4318:4318"   # OTLP HTTP (osi-back)
+      - "4317:4317"   # OTLP gRPC
+      - "3200:3200"   # API de consulta (Grafana)
+    volumes:
+      - ./tempo/tempo.yml:/etc/tempo.yml:ro
+      - tempo-data:/var/tempo
+    depends_on:
+      tempo-init:
+        condition: service_completed_successfully
+
+volumes:
+  prometheus-data:
+  grafana-data:
+  tempo-data:

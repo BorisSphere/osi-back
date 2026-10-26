@@ -52,6 +52,27 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security-oauth2-resource-server</artifactId>
 		</dependency>
+		<!-- Métricas para Prometheus (/actuator/prometheus) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<!-- Trazas con OpenTelemetry (envío por OTLP a Tempo) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-opentelemetry</artifactId>
+		</dependency>
+		<!-- Spans de cada query JDBC (la versión -spring-boot aún es para Boot 3: se registra a mano en JdbcTracingConfig) -->
+		<dependency>
+			<groupId>net.ttddyy.observation</groupId>
+			<artifactId>datasource-micrometer</artifactId>
+			<version>1.1.1</version>
+		</dependency>
 		<!-- Documentación OpenAPI + Swagger UI (/swagger-ui.html) -->
 		<dependency>
 			<groupId>org.springdoc</groupId>
