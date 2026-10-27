@@ -36,6 +36,12 @@ public class Usuario {
     @Column(name = "ROL", nullable = false, length = 20)
     private Rol rol;
 
+    @Column(name = "CORREO", length = 254, unique = true)
+    private String correo;
+
+    @Column(name = "ENTRA_OID", length = 36, unique = true)
+    private String entraOid;
+
     @Convert(converter = NumericBooleanConverter.class)
     @Column(name = "ACTIVO", nullable = false)
     private Boolean activo = true;

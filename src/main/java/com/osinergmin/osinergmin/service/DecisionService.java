@@ -8,9 +8,13 @@ import com.osinergmin.osinergmin.exception.RequerimientoNoEncontradoException;
 import com.osinergmin.osinergmin.exception.ValidacionNegocioException;
 import com.osinergmin.osinergmin.model.AccionAuditoria;
 import com.osinergmin.osinergmin.model.Estimacion;
+import com.osinergmin.osinergmin.model.Requerimiento;
+import com.osinergmin.osinergmin.model.Usuario;
 import com.osinergmin.osinergmin.repository.EstimacionRepository;
+import com.osinergmin.osinergmin.repository.RequerimientoRepository;
 import com.osinergmin.osinergmin.repository.RequerimientoEstadoRepository;
 import com.osinergmin.osinergmin.repository.RequerimientoEstadoRepository.Estado;
+import com.osinergmin.osinergmin.repository.UsuarioRepository;
 import com.osinergmin.osinergmin.util.CodigoRequerimiento;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,16 +26,25 @@ public class DecisionService {
     static final int MOTIVO_MIN = 10;
 
     private final RequerimientoEstadoRepository requerimientoRepository;
+    private final RequerimientoRepository requerimientoDetalleRepository;
     private final EstimacionRepository estimacionRepository;
     private final AuditoriaService auditoriaService;
+    private final UsuarioRepository usuarioRepository;
+    private final CorreoRequerimientoPublisher correoPublisher;
 
     public DecisionService(
             RequerimientoEstadoRepository requerimientoRepository,
+            RequerimientoRepository requerimientoDetalleRepository,
             EstimacionRepository estimacionRepository,
-            AuditoriaService auditoriaService) {
+            AuditoriaService auditoriaService,
+            UsuarioRepository usuarioRepository,
+            CorreoRequerimientoPublisher correoPublisher) {
         this.requerimientoRepository = requerimientoRepository;
+        this.requerimientoDetalleRepository = requerimientoDetalleRepository;
         this.estimacionRepository = estimacionRepository;
         this.auditoriaService = auditoriaService;
+        this.usuarioRepository = usuarioRepository;
+        this.correoPublisher = correoPublisher;
     }
 
     /**
@@ -68,6 +81,10 @@ public class DecisionService {
             auditoriaService.registrar(requerimientoId, aprobadorId, AccionAuditoria.APROBACION,
                     "Aprobó " + codigo + " con " + estimacion.getHhTotal().toPlainString() + " HH");
         }
+        Requerimiento requerimiento = requerimientoDetalleRepository.findWithDetalleById(requerimientoId)
+                .orElseThrow(() -> new RequerimientoNoEncontradoException(requerimientoId));
+        Usuario aprobador = usuarioRepository.getReferenceById(aprobadorId);
+        correoPublisher.decidido(requerimiento, aprobador, estimacion, rechazo, motivo);
         return new DecisionResponse(requerimientoId, codigo, nuevo.name(), rechazo ? motivo : null);
     }
 }

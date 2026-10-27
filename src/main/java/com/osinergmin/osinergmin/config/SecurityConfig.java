@@ -1,6 +1,7 @@
 package com.osinergmin.osinergmin.config;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import com.osinergmin.osinergmin.security.EntraProperties;
 import com.osinergmin.osinergmin.security.JsonAuthenticationEntryPoint;
 import com.osinergmin.osinergmin.security.JwtProperties;
 import com.osinergmin.osinergmin.security.MetricsProperties;
@@ -42,7 +43,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableMethodSecurity
-@EnableConfigurationProperties({JwtProperties.class, RefreshTokenProperties.class, MetricsProperties.class})
+@EnableConfigurationProperties({JwtProperties.class, RefreshTokenProperties.class, EntraProperties.class,
+        MetricsProperties.class})
 public class SecurityConfig {
 
     /**
@@ -76,7 +78,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/refresh", "/api/auth/logout").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/entra", "/api/auth/refresh", "/api/auth/logout").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/health").permitAll()
                         // Swagger UI y especificación OpenAPI (se desactivan con SWAGGER_ENABLED=false)

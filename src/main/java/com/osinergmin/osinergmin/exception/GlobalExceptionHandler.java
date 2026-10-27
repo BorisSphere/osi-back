@@ -58,6 +58,16 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.UNAUTHORIZED, "Usuario o contraseña incorrectos", null);
     }
 
+    @ExceptionHandler(EntraTokenInvalidoException.class)
+    public ResponseEntity<ErrorResponse> handleEntraTokenInvalido(EntraTokenInvalidoException ex) {
+        return build(HttpStatus.UNAUTHORIZED, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(EntraAccesoDenegadoException.class)
+    public ResponseEntity<ErrorResponse> handleEntraAccesoDenegado(EntraAccesoDenegadoException ex) {
+        return build(HttpStatus.FORBIDDEN, ex.getMessage(), null);
+    }
+
     @ExceptionHandler(DisabledException.class)
     public ResponseEntity<ErrorResponse> handleDisabled(DisabledException ex) {
         return build(HttpStatus.FORBIDDEN, "El usuario está inactivo", null);

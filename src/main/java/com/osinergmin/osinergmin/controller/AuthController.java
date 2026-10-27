@@ -1,5 +1,6 @@
 package com.osinergmin.osinergmin.controller;
 
+import com.osinergmin.osinergmin.dto.EntraLoginRequest;
 import com.osinergmin.osinergmin.dto.LoginRequest;
 import com.osinergmin.osinergmin.dto.LoginResponse;
 import com.osinergmin.osinergmin.dto.UsuarioResponse;
@@ -48,6 +49,14 @@ public class AuthController {
     @Operation(summary = "Iniciar sesión", description = "Devuelve el access token (JWT) y crea la cookie del refresh token.")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         return conCookie(authService.login(request));
+    }
+
+    @PostMapping("/entra")
+    @SecurityRequirements
+    @Operation(summary = "Iniciar sesión con Microsoft Entra ID",
+            description = "Recibe el access token de Entra (scope access_as_user), lo valida y devuelve el JWT propio y la cookie del refresh token.")
+    public ResponseEntity<LoginResponse> loginEntra(@Valid @RequestBody EntraLoginRequest request) {
+        return conCookie(authService.loginEntra(request.accessToken()));
     }
 
     @PostMapping("/refresh")

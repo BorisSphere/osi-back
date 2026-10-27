@@ -25,13 +25,16 @@ public class RequerimientoService {
     private final AplicacionRepository aplicacionRepository;
     private final UsuarioRepository usuarioRepository;
     private final ArchivoStorageService archivoStorage;
+    private final CorreoRequerimientoPublisher correoPublisher;
 
     public RequerimientoService(RequerimientoRepository repository, AplicacionRepository aplicacionRepository,
-            UsuarioRepository usuarioRepository, ArchivoStorageService archivoStorage) {
+            UsuarioRepository usuarioRepository, ArchivoStorageService archivoStorage,
+            CorreoRequerimientoPublisher correoPublisher) {
         this.repository = repository;
         this.aplicacionRepository = aplicacionRepository;
         this.usuarioRepository = usuarioRepository;
         this.archivoStorage = archivoStorage;
+        this.correoPublisher = correoPublisher;
     }
 
     /** Sin estado devuelve todos los requerimientos. */
@@ -57,7 +60,9 @@ public class RequerimientoService {
         requerimiento.setCreadoPor(creador);
         requerimiento.setEstado(EstadoRequerimiento.REGISTRADO);
         aplicarCambios(requerimiento, request);
-        return RequerimientoResponse.from(repository.saveAndFlush(requerimiento));
+        Requerimiento guardado = repository.saveAndFlush(requerimiento);
+        correoPublisher.registrado(guardado);
+        return RequerimientoResponse.from(guardado);
     }
 
     /** Corrige los datos de un requerimiento; el estado no se toca (lo cambian estimación y aprobación). */

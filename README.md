@@ -82,8 +82,28 @@ Todo está en [`application.properties`](src/main/resources/application.properti
 | `STORAGE_DIR` | `C:/osi-uploads` | Carpeta de archivos adjuntos (en producción, una ruta persistente) |
 | `SWAGGER_ENABLED` | `true` | Swagger UI y `/v3/api-docs`. Poner `false` en producción |
 | `ADMIN_USERNAME` / `ADMIN_PASSWORD` | vacío | Coordinador inicial (ver arriba) |
+| `MAIL_ENABLED` | `false` | Habilita los correos de notificación vía Microsoft Graph |
+| `MAIL_TENANT_ID` | tenant de Entra configurado | Tenant de la aplicación autorizada para Graph |
+| `MAIL_CLIENT_ID` | vacío | Client ID de la aplicación con permiso de aplicación `Mail.Send` |
+| `MAIL_CLIENT_SECRET` | vacío | Secreto de esa aplicación; guardar solo en el entorno/gestor de secretos |
+| `MAIL_FROM` | `workflow@sphere-itc.com` | Buzón remitente autorizado |
+| `APP_FRONT_URL` | `http://localhost:4200` | URL base para el enlace al requerimiento |
 
 Las credenciales de Oracle están hoy en el archivo; en producción conviene moverlas a variables de entorno.
+
+### Notificaciones por Microsoft Graph
+
+Los avisos al creador del requerimiento se publican después de confirmar la transacción y se envían en segundo plano. Hay plantillas editables en `src/main/resources/templates/mail/` para REGISTRADO, ESTIMADO, APROBADO y RECHAZADO. El envío está desactivado hasta configurar `MAIL_ENABLED=true` y las credenciales.
+
+En Entra ID, en el registro de aplicación que se usará para enviar (recomendado: una aplicación separada como `osi-mail`):
+
+1. **API permissions → Add a permission → Microsoft Graph → Application permissions → `Mail.Send`**. Debe ser permiso **Application**, no Delegated.
+2. Un administrador debe seleccionar **Grant admin consent** para el tenant.
+3. En **Certificates & secrets**, crear un secreto de cliente y guardar su **Value** en `MAIL_CLIENT_SECRET` de forma segura (no se puede volver a consultar en el portal).
+4. Configurar `MAIL_CLIENT_ID` con el client ID de esa aplicación, `MAIL_TENANT_ID` con el tenant y `MAIL_FROM=workflow@sphere-itc.com`.
+5. Verificar que `workflow@sphere-itc.com` sea un buzón de Exchange Online. Solicitar a TI restringir la aplicación para que solo pueda enviar como ese buzón (Exchange Online Application RBAC).
+
+El permiso de aplicación `Mail.Send` puede permitir enviar como otros buzones del tenant. No se debe dejar el secreto en `application.properties` ni en el repositorio.
 
 ## Autenticación
 
