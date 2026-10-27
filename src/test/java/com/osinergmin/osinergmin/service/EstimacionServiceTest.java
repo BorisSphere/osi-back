@@ -16,6 +16,7 @@ import com.osinergmin.osinergmin.exception.RequerimientoNoEncontradoException;
 import com.osinergmin.osinergmin.model.AccionAuditoria;
 import com.osinergmin.osinergmin.model.Estimacion;
 import com.osinergmin.osinergmin.repository.EstimacionRepository;
+import com.osinergmin.osinergmin.repository.RequerimientoRepository;
 import com.osinergmin.osinergmin.repository.RequerimientoEstadoRepository;
 import com.osinergmin.osinergmin.repository.RequerimientoEstadoRepository.Estado;
 import com.osinergmin.osinergmin.repository.UsuarioRepository;
@@ -36,16 +37,19 @@ class EstimacionServiceTest {
     private static final long ANALISTA = 7L;
 
     @Mock private EstimacionRepository estimacionRepository;
+    @Mock private RequerimientoRepository requerimientoDetalleRepository;
     @Mock private RequerimientoEstadoRepository requerimientoRepository;
     @Mock private UsuarioRepository usuarioRepository;
     @Mock private AuditoriaService auditoriaService;
+    @Mock private CorreoRequerimientoPublisher correoPublisher;
 
     private EstimacionService service;
 
     @BeforeEach
     void setUp() {
         service = new EstimacionService(
-                estimacionRepository, requerimientoRepository, usuarioRepository, new EstimacionCalculator(), auditoriaService);
+                estimacionRepository, requerimientoDetalleRepository, requerimientoRepository,
+                usuarioRepository, new EstimacionCalculator(), auditoriaService, correoPublisher);
     }
 
     private void guardarDevuelveLoMismo() {
@@ -56,6 +60,8 @@ class EstimacionServiceTest {
     void requerimientoRegistradoSeEstimaPasaAEstimadoYSeAudita() {
         when(requerimientoRepository.bloquearYLeerEstado(REQ)).thenReturn(Optional.of(Estado.REGISTRADO));
         when(estimacionRepository.findByRequerimientoId(REQ)).thenReturn(Optional.empty());
+        when(requerimientoDetalleRepository.findWithDetalleById(REQ))
+                .thenReturn(Optional.of(new com.osinergmin.osinergmin.model.Requerimiento()));
         guardarDevuelveLoMismo();
 
         EstimacionResponse r = service.estimar(REQ, new BigDecimal("78"), ANALISTA);
@@ -75,6 +81,8 @@ class EstimacionServiceTest {
         existente.setRequerimientoId(REQ);
         when(requerimientoRepository.bloquearYLeerEstado(REQ)).thenReturn(Optional.of(Estado.ESTIMADO));
         when(estimacionRepository.findByRequerimientoId(REQ)).thenReturn(Optional.of(existente));
+        when(requerimientoDetalleRepository.findWithDetalleById(REQ))
+                .thenReturn(Optional.of(new com.osinergmin.osinergmin.model.Requerimiento()));
         guardarDevuelveLoMismo();
 
         service.estimar(REQ, new BigDecimal("50"), ANALISTA);
@@ -89,6 +97,8 @@ class EstimacionServiceTest {
     void requerimientoRechazadoPuedeCorregirseYReestimarse() {
         when(requerimientoRepository.bloquearYLeerEstado(REQ)).thenReturn(Optional.of(Estado.RECHAZADO));
         when(estimacionRepository.findByRequerimientoId(REQ)).thenReturn(Optional.empty());
+        when(requerimientoDetalleRepository.findWithDetalleById(REQ))
+                .thenReturn(Optional.of(new com.osinergmin.osinergmin.model.Requerimiento()));
         guardarDevuelveLoMismo();
 
         EstimacionResponse r = service.estimar(REQ, new BigDecimal("78"), ANALISTA);

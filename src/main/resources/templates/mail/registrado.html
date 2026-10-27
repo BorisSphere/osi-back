@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="es">
+  <body style="margin:0;background:#f1f5f9;font-family:Arial,Helvetica,sans-serif;color:#0f172a">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding:32px 12px">
+      <tr><td align="center">
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width:600px;background:#fff;border-radius:12px;overflow:hidden">
+          <tr><td style="padding:24px 32px;background:#1d4ed8;color:#fff;font-size:21px;font-weight:bold"><svg width="28" height="28" viewBox="0 0 24 24" fill="#fff" style="vertical-align:middle;margin-right:10px"><path d="M19.14 12.94c.04-.31.06-.62.06-.94s-.02-.63-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84a.48.48 0 0 0-.48.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.71 8.87a.48.48 0 0 0 .12.61l2.03 1.58c-.05.31-.08.64-.08.94s.02.63.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.48.48 0 0 0-.12-.61l-2.01-1.58ZM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2Z"/></svg><span style="vertical-align:middle">Lab Modernización</span></td></tr>
+          <tr><td style="padding:32px">
+            <p style="margin:0 0 8px;color:#1d4ed8;font-weight:bold">REQUERIMIENTO REGISTRADO</p>
+            <h1 style="margin:0 0 16px;font-size:24px">Confirmación de registro</h1>
+            <p style="line-height:1.6">Hola {{creador}}, se registró el requerimiento <strong>{{codigo}}</strong>. Su estado actual es <strong>{{estado}}</strong>.</p>
+            <p style="line-height:1.6">{{detalleAccion}}</p>
+            <h2 style="font-size:17px">Detalle del requerimiento</h2>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="7" style="border-collapse:collapse;font-size:14px">
+              <tr><td style="color:#475569;width:150px">Aplicación</td><td><strong>{{aplicacion}}</strong></td></tr>
+              <tr><td style="color:#475569">Título</td><td>{{titulo}}</td></tr>
+              <tr><td style="color:#475569">Descripción</td><td>{{descripcion}}</td></tr>
+              <tr><td style="color:#475569">Prioridad</td><td>{{prioridad}}</td></tr>
+              <tr><td style="color:#475569">Fecha requerida</td><td>{{fechaRequerida}}</td></tr>
+              <tr><td style="color:#475569">Detalle técnico</td><td>{{detalleTecnico}}</td></tr>
+            </table>
+            <p style="margin:24px 0"><a href="{{enlace}}" style="display:inline-block;padding:12px 20px;border-radius:6px;background:#1d4ed8;color:#fff;text-decoration:none;font-weight:bold">Ver requerimiento</a></p>
+            <p style="font-size:12px;color:#64748b">Mensaje automático. No responda a este correo.</p>
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </body>
+</html>

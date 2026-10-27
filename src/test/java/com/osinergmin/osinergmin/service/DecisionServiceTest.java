@@ -19,8 +19,10 @@ import com.osinergmin.osinergmin.exception.ValidacionNegocioException;
 import com.osinergmin.osinergmin.model.AccionAuditoria;
 import com.osinergmin.osinergmin.model.Estimacion;
 import com.osinergmin.osinergmin.repository.EstimacionRepository;
+import com.osinergmin.osinergmin.repository.RequerimientoRepository;
 import com.osinergmin.osinergmin.repository.RequerimientoEstadoRepository;
 import com.osinergmin.osinergmin.repository.RequerimientoEstadoRepository.Estado;
+import com.osinergmin.osinergmin.repository.UsuarioRepository;
 import java.math.BigDecimal;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,14 +39,19 @@ class DecisionServiceTest {
     private static final long APROBADOR = 9L;
 
     @Mock private RequerimientoEstadoRepository requerimientoRepository;
+    @Mock private RequerimientoRepository requerimientoDetalleRepository;
     @Mock private EstimacionRepository estimacionRepository;
     @Mock private AuditoriaService auditoriaService;
+    @Mock private UsuarioRepository usuarioRepository;
+    @Mock private CorreoRequerimientoPublisher correoPublisher;
 
     private DecisionService service;
 
     @BeforeEach
     void setUp() {
-        service = new DecisionService(requerimientoRepository, estimacionRepository, auditoriaService);
+        service = new DecisionService(
+                requerimientoRepository, requerimientoDetalleRepository, estimacionRepository,
+                auditoriaService, usuarioRepository, correoPublisher);
     }
 
     private void estimadoCon(String hhTotal) {
@@ -53,6 +60,8 @@ class DecisionServiceTest {
         e.setHhTotal(new BigDecimal(hhTotal));
         when(requerimientoRepository.bloquearYLeerEstado(REQ)).thenReturn(Optional.of(Estado.ESTIMADO));
         when(estimacionRepository.findByRequerimientoId(REQ)).thenReturn(Optional.of(e));
+        when(requerimientoDetalleRepository.findWithDetalleById(REQ))
+                .thenReturn(Optional.of(new com.osinergmin.osinergmin.model.Requerimiento()));
     }
 
     private void verificarQueNoCambioNada() {

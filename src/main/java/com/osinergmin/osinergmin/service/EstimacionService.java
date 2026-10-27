@@ -5,7 +5,9 @@ import com.osinergmin.osinergmin.exception.EstadoInvalidoException;
 import com.osinergmin.osinergmin.exception.RequerimientoNoEncontradoException;
 import com.osinergmin.osinergmin.model.AccionAuditoria;
 import com.osinergmin.osinergmin.model.Estimacion;
+import com.osinergmin.osinergmin.model.Requerimiento;
 import com.osinergmin.osinergmin.repository.EstimacionRepository;
+import com.osinergmin.osinergmin.repository.RequerimientoRepository;
 import com.osinergmin.osinergmin.repository.RequerimientoEstadoRepository;
 import com.osinergmin.osinergmin.repository.RequerimientoEstadoRepository.Estado;
 import com.osinergmin.osinergmin.repository.UsuarioRepository;
@@ -24,22 +26,28 @@ public class EstimacionService {
     private static final Set<Estado> ESTIMABLES = Set.of(Estado.REGISTRADO, Estado.ESTIMADO, Estado.RECHAZADO);
 
     private final EstimacionRepository estimacionRepository;
+    private final RequerimientoRepository requerimientoDetalleRepository;
     private final RequerimientoEstadoRepository requerimientoRepository;
     private final UsuarioRepository usuarioRepository;
     private final EstimacionCalculator calculator;
     private final AuditoriaService auditoriaService;
+    private final CorreoRequerimientoPublisher correoPublisher;
 
     public EstimacionService(
             EstimacionRepository estimacionRepository,
+            RequerimientoRepository requerimientoDetalleRepository,
             RequerimientoEstadoRepository requerimientoRepository,
             UsuarioRepository usuarioRepository,
             EstimacionCalculator calculator,
-            AuditoriaService auditoriaService) {
+            AuditoriaService auditoriaService,
+            CorreoRequerimientoPublisher correoPublisher) {
         this.estimacionRepository = estimacionRepository;
+        this.requerimientoDetalleRepository = requerimientoDetalleRepository;
         this.requerimientoRepository = requerimientoRepository;
         this.usuarioRepository = usuarioRepository;
         this.calculator = calculator;
         this.auditoriaService = auditoriaService;
+        this.correoPublisher = correoPublisher;
     }
 
     /**
@@ -77,6 +85,9 @@ public class EstimacionService {
                 requerimientoId, usuarioId, AccionAuditoria.ESTIMACION,
                 "Estimó " + d.total().toPlainString() + " HH para " + codigo);
 
+        Requerimiento requerimiento = requerimientoDetalleRepository.findWithDetalleById(requerimientoId)
+                .orElseThrow(() -> new RequerimientoNoEncontradoException(requerimientoId));
+        correoPublisher.estimado(requerimiento, guardada);
         return EstimacionResponse.from(guardada, Estado.ESTIMADO.name());
     }
 }
