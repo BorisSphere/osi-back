@@ -1,5 +1,6 @@
 package com.osinergmin.osinergmin.exception;
 
+import com.osinergmin.osinergmin.alfresco.AlfrescoNoDisponibleException;
 import com.osinergmin.osinergmin.dto.ErrorResponse;
 import java.util.Map;
 import org.springframework.core.Ordered;
@@ -33,6 +34,17 @@ public class FlujoRequerimientoExceptionHandler {
         HttpStatus status = HttpStatus.BAD_REQUEST;
         return ResponseEntity.status(status).body(ErrorResponse.of(
                 status.value(), status.getReasonPhrase(), "Datos inválidos", Map.of(ex.getCampo(), ex.getMessage())));
+    }
+
+    /** Alfresco sin configurar, caído o con credenciales inválidas: el resto del sistema sigue funcionando. */
+    @ExceptionHandler(AlfrescoNoDisponibleException.class)
+    public ResponseEntity<ErrorResponse> handleAlfresco(AlfrescoNoDisponibleException ex) {
+        return build(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
+    }
+
+    @ExceptionHandler(ReporteArchivadoNoEncontradoException.class)
+    public ResponseEntity<ErrorResponse> handleArchivadoNoEncontrado(ReporteArchivadoNoEncontradoException ex) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
     private ResponseEntity<ErrorResponse> build(HttpStatus status, String message) {
